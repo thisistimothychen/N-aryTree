@@ -47,7 +47,7 @@ public class Tree<T> {
         this.root = root;
     }
 
-    public void insertValue(T value) {
+    public void addChild(T value) {
         this.root.addChild(new Node(value));
     }
 
