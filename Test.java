@@ -104,7 +104,7 @@ public class Test {
                 userInput = intInput.nextInt();
                 tree = tree.getChildAt(userInput - 1);
                 System.out.println("Currently in child with data " + tree.getData());
-            } else if (operation.equals("Select parent")) {                                                 // Select parent
+            } else if (operation.equals("Select parent")) {                                     // Select parent
                 tree = tree.getParent();
                 System.out.println("Currently in parent with data " + tree.getData());
             }
