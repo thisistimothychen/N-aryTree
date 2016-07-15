@@ -1,5 +1,4 @@
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Vector;
 
 /**
  * A BetterNode of any type. A BetterNode contains a data and links to it's children and it's parent.
@@ -9,16 +8,19 @@ import java.util.List;
 public class BetterNode<T> {
 
     private T data;
-    private List<BetterNode<T>> children;
+    private int count;
+    private Vector<BetterNode<T>> children;
     private BetterNode<T> parent;
 
     public BetterNode(T data) {
         this.data = data;
-        this.children = new ArrayList<BetterNode<T>>();
+        this.count = 1;
+        this.children = new Vector<BetterNode<T>>();
     }
 
     public BetterNode() {
-        this.children = new ArrayList<BetterNode<T>>();
+        this.count = 1;
+        this.children = new Vector<BetterNode<T>>();
     }
 
     /**
@@ -29,28 +31,57 @@ public class BetterNode<T> {
      */
     public BetterNode(BetterNode<T> BetterNode) {
         this.data = BetterNode.getData();
-        children = new ArrayList<BetterNode<T>>();
+        children = new Vector<BetterNode<T>>();
     }
 
     /**
      * Add a child to this BetterNode.
      *
-     * @param child child BetterNode
+     * @param childData for child BetterNode
      */
-    public void addChild(BetterNode<T> child) {
-        child.setParent(this);
-        children.add(child);
+    public void addChild(T childData) {
+        BetterNode<T> childDup = this.find(childData);
+        if (childDup != null) {
+            childDup.count += 1;
+            while (childDup.getParent() != null) {
+                childDup.getParent().count += 1;
+                childDup = childDup.getParent();
+            }
+        } else {
+            BetterNode<T> child = new BetterNode<T>(childData);
+            child.setParent(this);
+            children.add(child);
+
+            while (child.getParent() != null) {
+                child.getParent().count += 1;
+                child = child.getParent();
+            }
+        }
     }
 
-    public void setChildren(List<BetterNode<T>> children) {
+    public BetterNode<T> find(T data) {
+        for (BetterNode<T> node : this.getChildren()) {
+            if (node.getData().equals(data)) {
+                return node;
+            }
+        }
+
+        return null;
+    }
+
+    public void setChildren(Vector<BetterNode<T>> children) {
         for (BetterNode<T> child : children)
             child.setParent(this);
 
         this.children = children;
     }
 
-    public int numChildren() {
+    public int getNumChildren() {
         return this.children.size();
+    }
+
+    public int getCount() {
+        return this.count;
     }
 
     /**
@@ -68,8 +99,8 @@ public class BetterNode<T> {
      * <code>false</code> otherwise.
      */
     public boolean removeChild(BetterNode<T> childToBeDeleted) {
-        List<BetterNode<T>> list = getChildren();
-        return list.remove(childToBeDeleted);
+        Vector<BetterNode<T>> Vector = getChildren();
+        return Vector.remove(childToBeDeleted);
     }
 
     public T getData() {
@@ -88,7 +119,7 @@ public class BetterNode<T> {
         this.parent = parent;
     }
 
-    public List<BetterNode<T>> getChildren() {
+    public Vector<BetterNode<T>> getChildren() {
         return this.children;
     }
 
@@ -103,26 +134,21 @@ public class BetterNode<T> {
         return tree;
     }
 
-    private void printTraversal(ArrayList<BetterNode<T>> traversal) {
-        String output = "[";
-
-        for (BetterNode<T> node : traversal) {
-            output += node.toString() + ", ";
+    private void printTraversal(Vector<BetterNode<T>> traversal) {
+        System.out.print("PRINTING TREE: ");
+        for(BetterNode<T> node : traversal) {
+            System.out.print(node.getData() + ":" + node.getCount() + " ");
         }
-
-        output.substring(0, output.length() - 2);
-        output += "]";
-
-        System.out.println(traversal);
+        System.out.println("");
     }
 
     /**
-     * Get the list of nodes arranged by the post-order traversal of the tree.
+     * Get the Vector of nodes arranged by the post-order traversal of the tree.
      *
-     * @return The list of nodes in the tree, arranged in the post-order
+     * @return The Vector of nodes in the tree, arranged in the post-order
      */
-    public ArrayList<BetterNode<T>> getPostOrderTraversal() {
-        ArrayList<BetterNode<T>> postOrder = new ArrayList<BetterNode<T>>();
+    public Vector<BetterNode<T>> getPostOrderTraversal() {
+        Vector<BetterNode<T>> postOrder = new Vector<BetterNode<T>>();
         buildPostOrder(this, postOrder);
 
         printTraversal(postOrder);
@@ -130,12 +156,25 @@ public class BetterNode<T> {
         return postOrder;
     }
 
-    private void buildPostOrder(BetterNode<T> node, ArrayList<BetterNode<T>> postOrder) {
+    private void buildPostOrder(BetterNode<T> node, Vector<BetterNode<T>> postOrder) {
         for (BetterNode<T> child : node.getChildren()) {
             buildPostOrder(child, postOrder);
         }
         postOrder.add(node);
     }
+
+//    @Override
+//    public boolean equals(Object obj) {
+//        if (null == obj)
+//            return false;
+//
+//        if (obj instanceof BetterNode) {
+//            if (((BetterNode<?>) obj).getData().equals(this.data))
+//                return true;
+//        }
+//
+//        return false;
+//    }
 
     @Override
     public boolean equals(Object obj) {
@@ -143,11 +182,24 @@ public class BetterNode<T> {
             return false;
 
         if (obj instanceof BetterNode) {
-            if (((BetterNode<?>) obj).getData().equals(this.data))
-                return true;
+            BetterNode<T> other = (BetterNode<T>) obj;
+
+            if (other.getNumChildren() != this.getNumChildren())
+                return false;
+            else {
+                Vector<BetterNode<T>> other_children = other.getChildren();
+                Vector<BetterNode<T>> this_children = this.getChildren();
+                int this_num_children = this.getNumChildren();
+
+                for (int i = 0; i < this_num_children; i++) {
+                    if (!other_children.get(i).equals(this_children.get(i))) {
+                        return false;
+                    }
+                }
+            }
         }
 
-        return false;
+        return true;
     }
 
     @Override
@@ -155,3 +207,10 @@ public class BetterNode<T> {
         return this.data.toString();
     }
 }
+
+
+/*
+include count
+change to recursion
+compare tree
+ */

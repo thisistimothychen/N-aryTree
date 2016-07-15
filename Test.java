@@ -1,5 +1,5 @@
 import java.util.Scanner;
-import java.util.ArrayList;
+import java.util.Vector;
 
 /**
  * Created by Timothy Chen on 7/13/16.
@@ -9,8 +9,6 @@ public class Test {
     public static void main(String[] args) {
         Scanner intInput = new Scanner(System.in);
         Scanner stringInput = new Scanner(System.in);
-        BetterNode<Integer> tree = new BetterNode(new BetterNode());
-        BetterNode<Integer> root = tree;
         int userInput;
         char opSel;
         String operation = "";
@@ -18,11 +16,11 @@ public class Test {
         System.out.println("Insert root value: ");
         System.out.print(">> ");
         userInput = intInput.nextInt();
-        tree.setData(userInput);
-
+        BetterNode<Integer> tree = new BetterNode(userInput);
+        BetterNode<Integer> root = tree;
 
         do {
-            if (tree.numChildren() != 0) {
+            if (tree.getNumChildren() != 0 && root.equals(tree)) {             // At the top, has children
                 System.out.println("\nSelect action: ");
                 System.out.println("a. Exit program");
                 System.out.println("b. Create child node");
@@ -38,7 +36,7 @@ public class Test {
                     case 'c':   operation = "Select child";
                                 break;
                 }
-            } else if (root.equals(tree)) {
+            } else if (tree.getNumChildren() == 0 && root.equals(tree)) {      // At top, no children
                 System.out.println("\nSelect action: ");
                 System.out.println("a. Exit program");
                 System.out.println("b. Create child node");
@@ -51,7 +49,7 @@ public class Test {
                     case 'b':   operation = "Create child";
                                 break;
                 }
-            } else if (tree.numChildren() == 0) {
+            } else if (tree.getNumChildren() == 0) {                           // In middle, no children
                 System.out.println("\nSelect action: ");
                 System.out.println("a. Exit program");
                 System.out.println("b. Create child node");
@@ -92,17 +90,17 @@ public class Test {
                 System.out.println("\nWhat value would you like to insert into the tree?");
                 userInput = intInput.nextInt();
 
-                tree.addChild(new BetterNode<>(userInput));
+                tree.addChild(userInput);
             } else if (operation.equals("Select child")) {                                      // Select child
-                System.out.println("\nWhich child would you like to select (by index)?");
+                System.out.println("\nWhich child would you like to select?");
 
-                ArrayList<BetterNode<Integer>> children = (ArrayList<BetterNode<Integer>>) tree.getChildren();
+                Vector<BetterNode<Integer>> children = (Vector<BetterNode<Integer>>) tree.getChildren();
                 for (int i = 0; i < children.size(); i++) {
-                    System.out.println("Enter " + (i + 1) + " for: " + children.get(i));
+                    System.out.println("Select " + children.get(i));
                 }
 
                 userInput = intInput.nextInt();
-                tree = tree.getChildAt(userInput - 1);
+                tree = tree.find(userInput);
                 System.out.println("Currently in child with data " + tree.getData());
             } else if (operation.equals("Select parent")) {                                     // Select parent
                 tree = tree.getParent();
@@ -114,5 +112,9 @@ public class Test {
         } while (!operation.equals("Exit"));
 
         root.getPostOrderTraversal();
+
+        Vector<BetterNode<Integer>> children = root.getChildren();
+        System.out.println("COMPARE index 0 and 2: " + children.get(0).equals(children.get(2)));
+        System.out.println("COMPARE index 0 and 1: " + children.get(0).equals(children.get(1)));
     }
 }
